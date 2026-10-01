@@ -14,7 +14,7 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#top" aria-label="{{ stall_name }} home"><span class="brand-mark">F</span><span>{{ stall_name }}<small>GOOD FOOD, MADE FRESH</small></span></a>
-    <nav><a href="#menu">Menu</a><a href="#offers">Offers</a><button class="nav-link" id="booking-open">Book a table</button><button class="nav-link" id="orders-open">Your orders</button><button class="nav-link" id="favorites-open">♡ Saved</button>{% if user.is_authenticated %}<span class="account-greeting">Hi, {{ user.username }}</span><form class="logout-form" method="post" action="{% url 'customer_logout' %}">{% csrf_token %}<button class="account-link" type="submit">Sign out</button></form>{% else %}<a class="account-link" href="{% url 'customer_login' %}">Sign in / Register</a>{% endif %}</nav>
+    <nav><a href="#menu">Menu</a><a href="#offers">Offers</a><button class="nav-link" id="booking-open">Book a table</button><button class="nav-link" id="orders-open">Your orders</button><button class="nav-link" id="favorites-open">♡ Saved</button>{% if user.is_authenticated %}<span class="account-greeting">Hi, {{ user.username }}</span><form class="logout-form" method="post" action="{% url 'customer_logout' %}">{% csrf_token %}<button class="account-link" type="submit">Sign out</button></form>{% else %}<a class="account-link" href="{% url 'customer_login' %}">Register / Sign in</a>{% endif %}</nav>
     <button class="cart-button" id="cart-open"><span>🛍</span> Cart <b id="cart-count">0</b></button>
   </header>
 
