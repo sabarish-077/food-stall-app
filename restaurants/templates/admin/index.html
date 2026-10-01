@@ -1,0 +1,18 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% block content %}
+<div class="stall-dashboard">
+  <section class="stall-welcome">
+    <div><span class="stall-kicker">YOUR STALL, IN ONE PLACE</span><h1>Welcome to your dashboard</h1><p>Manage your menu, orders, bookings, and day-to-day details.</p></div>
+    <a class="stall-primary-link" href="/staff/">Open staff overview <span>↗</span></a>
+  </section>
+  <section class="stall-quick-links" aria-label="Quick actions">
+    <a href="/staff/orders/"><span class="quick-symbol">▤</span><span><b>Manage orders</b><small>Review and update orders</small></span><i>→</i></a>
+    <a href="/admin/restaurants/menuitem/add/"><span class="quick-symbol">＋</span><span><b>Add a menu item</b><small>Keep today's menu fresh</small></span><i>→</i></a>
+    <a href="/admin/restaurants/tablebooking/"><span class="quick-symbol">◷</span><span><b>Table bookings</b><small>Check guest reservations</small></span><i>→</i></a>
+  </section>
+  <section class="stall-admin-apps"><div class="stall-section-heading"><div><span class="stall-kicker">WORKSPACE</span><h2>Manage your stall</h2></div><a href="/">View customer website ↗</a></div>
+  {% if app_list %}<div class="stall-app-grid">{% for app in app_list %}<article class="stall-app-card"><h3>{% if app.app_url %}<a href="{{ app.app_url }}">{{ app.name }}</a>{% else %}{{ app.name }}{% endif %}</h3><ul>{% for model in app.models %}<li><a class="stall-model-name" href="{{ model.admin_url|default:'#' }}">{{ model.name }}</a><span class="stall-model-actions">{% if model.add_url %}<a href="{{ model.add_url }}">Add</a>{% endif %}{% if model.admin_url %}<a href="{{ model.admin_url }}">View</a>{% endif %}</span></li>{% endfor %}</ul></article>{% endfor %}</div>{% else %}<p class="stall-empty">You do not have permission to manage any items yet.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

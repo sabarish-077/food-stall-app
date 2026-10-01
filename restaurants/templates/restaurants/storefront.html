@@ -1,0 +1,71 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f5ed">
+  <title>{{ stall_name }} · Fresh from the stall</title>
+  <link rel="stylesheet" href="{% static 'restaurants/storefront.css' %}">
+  <link rel="stylesheet" href="{% static 'restaurants/menu-detail.css' %}">
+  <script defer src="{% static 'restaurants/storefront.js' %}"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="{{ stall_name }} home"><span class="brand-mark">F</span><span>{{ stall_name }}<small>GOOD FOOD, MADE FRESH</small></span></a>
+    <nav><a href="#menu">Menu</a><a href="#offers">Offers</a><button class="nav-link" id="booking-open">Book a table</button><button class="nav-link" id="orders-open">Your orders</button><button class="nav-link" id="favorites-open">♡ Saved</button>{% if user.is_authenticated %}<span class="account-greeting">Hi, {{ user.username }}</span><form class="logout-form" method="post" action="{% url 'customer_logout' %}">{% csrf_token %}<button class="account-link" type="submit">Sign out</button></form>{% else %}<a class="account-link" href="{% url 'customer_login' %}">Sign in / Register</a>{% endif %}</nav>
+    <button class="cart-button" id="cart-open"><span>🛍</span> Cart <b id="cart-count">0</b></button>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy"><span class="eyebrow">FRESH FROM THE GRIDDLE · MADE WITH CARE</span>
+        <h1>Taste that brings<br><em>people together.</em></h1>
+        <p>Discover neighbourhood favourites, prepared fresh and served with a little extra love.</p>
+        <div class="hero-actions"><a class="primary-button" href="#menu">Order now <span>↘</span></a><button class="secondary-button" id="hero-booking">Book a table <span>↗</span></button></div>
+        <div class="hero-note"><span class="stars">★★★★★</span> Freshly prepared, every order</div>
+      </div>
+      <div class="hero-art"><img class="hero-image" src="{% static 'restaurants/food-dosa.svg' %}" alt="Golden, freshly made dosa"><div class="art-sticker">FRESH<br><b>& TASTY</b></div></div>
+    </section>
+
+    <section class="trust-strip"><span>✦ Fresh ingredients</span><i></i><span>✦ Authentic flavours</span><i></i><span>✦ Fast friendly service</span></section>
+
+    <section class="offers-section" id="offers"><div class="section-heading"><div><span class="eyebrow">A LITTLE SOMETHING EXTRA</span><h2>Today's offers</h2></div><p>Save a little on your next favourite.</p></div><div class="offer-grid" id="offer-grid"><div class="loading-card">Looking for today's offers…</div></div></section>
+
+    <section class="menu-section" id="menu">
+      <div class="section-heading"><div><span class="eyebrow">STRAIGHT FROM OUR KITCHEN</span><h2>Find your favourite</h2></div><p>Freshly made favourites.<br>Choose something delicious.</p></div>
+      <div class="menu-tools"><label class="search-box"><span>⌕</span><input id="menu-search" type="search" placeholder="Search dishes..." aria-label="Search dishes"></label><select id="diet-filter" aria-label="Filter vegetarian foods"><option value="all">All dishes</option><option value="veg">Vegetarian</option><option value="nonveg">Non-vegetarian</option></select><label class="price-filter">Up to <select id="price-filter" aria-label="Maximum price"><option value="all">Any price</option><option value="50">₹50</option><option value="100">₹100</option><option value="200">₹200</option><option value="500">₹500</option></select></label></div>
+      <div class="category-row" id="categories"><button class="category active" data-category="all">Everything</button></div>
+      <div class="menu-grid" id="menu-grid"><div class="loading-card">Getting the good stuff ready…</div></div>
+    </section>
+
+    <section class="gallery-section"><div class="section-heading"><div><span class="eyebrow">A PEEK INTO OUR KITCHEN</span><h2>Made fresh, every day</h2></div><p>Good food is best shared.</p></div><div class="gallery-grid"><img src="{% static 'restaurants/food-samosa.svg' %}" alt="Golden, freshly prepared samosa" loading="lazy"><img src="{% static 'restaurants/food-dosa.svg' %}" alt="Street-style dosa" loading="lazy"><img src="{% static 'restaurants/food-chai.svg' %}" alt="A warm cup of masala chai" loading="lazy"></div></section>
+
+    <section class="reviews-section"><div class="section-heading"><div><span class="eyebrow">KIND WORDS</span><h2>From our customers</h2></div><button class="secondary-button" id="review-open">Leave a review <span>↗</span></button></div><div class="review-grid" id="review-grid"><div class="loading-card">Loading customer notes…</div></div></section>
+
+    <section class="visit-section" id="visit"><div><span class="eyebrow">COME SAY HELLO</span><h2>Find us around the corner.</h2><p class="visit-address">{{ stall_address }}</p><p><b>Hours</b><br>{{ stall_hours }}</p><p>{% if stall_phone %}<b>Call us</b><br><a href="tel:{{ stall_phone }}">{{ stall_phone }}</a>{% else %}Add your contact number in settings.py{% endif %}</p><a class="primary-button" href="https://maps.google.com/?q={{ stall_address|urlencode }}" target="_blank" rel="noopener">Get directions <span>↗</span></a></div><div class="map-card"><div class="map-pin">⌖</div><b>{{ stall_name }}</b><span>{{ stall_address }}</span></div></section>
+    {% if stall_whatsapp %}<a class="whatsapp-float" href="https://wa.me/{{ stall_whatsapp }}" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">◉ <span>Chat with us</span></a>{% endif %}
+  </main>
+
+  <footer><a class="brand" href="#top"><span class="brand-mark">F</span><span>{{ stall_name }}<small>GOOD FOOD, MADE FRESH</small></span></a><span>Made fresh for you.</span><a href="/staff/">Staff sign in ↗</a></footer>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="side-panel" id="cart-panel" aria-label="Your cart" aria-hidden="true" data-delivery-fee="{{ delivery_fee }}">
+    <div class="panel-heading"><div><span class="eyebrow">ALMOST THERE</span><h2>Your cart</h2></div><button class="icon-button" data-close aria-label="Close">×</button></div>
+    <div id="cart-lines" class="cart-lines"></div>
+    <div class="cart-bottom"><div id="cart-totals"></div><button class="primary-button full-width" id="checkout-open">Continue to checkout <span>→</span></button><small>Pay at the stall or choose cash on delivery.</small></div>
+  </aside>
+
+  <section class="modal" id="checkout-modal" aria-hidden="true"><div class="modal-card"><div class="panel-heading"><div><span class="eyebrow">ONE LAST THING</span><h2>Where should we bring it?</h2></div><button class="icon-button" data-close aria-label="Close">×</button></div>
+    <form id="checkout-form"><label>Your name<input name="customer_name" required autocomplete="name" placeholder="Name for the order"></label><label>Phone number<input name="phone" required type="tel" autocomplete="tel" placeholder="Your contact number"></label><label>Order type<select name="fulfillment" id="fulfillment"><option value="delivery">Delivery</option><option value="pickup">I'll pick it up</option></select></label><label id="address-label">Delivery address<textarea name="delivery_address" rows="3" placeholder="Street, area, nearby landmark"></textarea></label><label>Offer code (optional)<input name="coupon_code" id="coupon-code" placeholder="WELCOME10"></label><label>Payment<select name="payment_method"><option value="cash_on_delivery">Cash on delivery</option><option value="pay_at_stall">Pay at stall</option></select></label><p class="form-error" id="checkout-error"></p><button class="primary-button full-width" type="submit">Place my order <span>→</span></button><small>Online payment will be enabled after you choose a payment provider.</small></form>
+  </div></section>
+
+  <section class="modal" id="order-success-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="order-success-title"><div class="modal-card order-success-card"><button class="icon-button success-close" data-close aria-label="Close">×</button><div class="success-mark">✓</div><span class="eyebrow">FRESHNESS IS ON ITS WAY</span><h2 id="order-success-title">Thank you!</h2><p class="success-greeting" id="order-success-greeting"></p><div class="success-order-number" id="order-success-number"></div><div class="success-items" id="order-success-items"></div><div class="success-total"><span>Order total</span><b id="order-success-total"></b></div><p class="success-note">We’ve received your order and will prepare it fresh. You can follow its progress from <b>Your orders</b>.</p><button class="primary-button full-width" type="button" data-close>Back to the menu <span>→</span></button></div></section>
+
+  <section class="modal" id="orders-modal" aria-hidden="true"><div class="modal-card"><div class="panel-heading"><div><span class="eyebrow">MADE FOR YOU</span><h2>Your orders</h2></div><button class="icon-button" data-close aria-label="Close">×</button></div><div id="order-history" class="order-history"></div></div></section>
+  <section class="modal" id="booking-modal" aria-hidden="true"><div class="modal-card"><div class="panel-heading"><div><span class="eyebrow">SAVE YOUR SEAT</span><h2>Book a table</h2></div><button class="icon-button" data-close aria-label="Close">×</button></div><form id="booking-form"><label>Your name<input name="customer_name" required autocomplete="name"></label><label>Phone number<input name="phone" type="tel" required autocomplete="tel"></label><div class="form-row"><label>Date<input type="date" name="date" id="booking-date" required></label><label>Time<select name="time" required><option value="">Select time</option><option>11:00</option><option>12:00</option><option>13:00</option><option>17:00</option><option>18:00</option><option>19:00</option><option>20:00</option><option>21:00</option></select></label></div><div class="form-row"><label>Guests<input name="guests" type="number" min="1" max="20" value="2" required></label><label>Available table<select name="table_id" id="table-select" required><option value="">Choose date, time and guests first</option></select></label></div><label>Anything we should know?<textarea name="notes" rows="2"></textarea></label><p class="form-error" id="booking-error"></p><button class="primary-button full-width" type="submit">Request booking <span>→</span></button><small>We’ll confirm your table shortly.</small></form></div></section>
+  <section class="modal" id="review-modal" aria-hidden="true"><div class="modal-card"><div class="panel-heading"><div><span class="eyebrow">TELL US HOW WE DID</span><h2>Leave a review</h2></div><button class="icon-button" data-close aria-label="Close">×</button></div><form id="review-form"><label>Your name<input name="customer_name" required></label><label>Rating<select name="rating"><option value="5">★★★★★ — Loved it</option><option value="4">★★★★ — Great</option><option value="3">★★★ — Good</option><option value="2">★★ — Could improve</option><option value="1">★ — Not for me</option></select></label><label>Your note<textarea name="comment" maxlength="300" required></textarea></label><p class="form-error" id="review-error"></p><button class="primary-button full-width" type="submit">Send for review <span>→</span></button><small>Reviews appear after staff approval.</small></form></div></section>
+  <section class="modal" id="favorites-modal" aria-hidden="true"><div class="modal-card"><div class="panel-heading"><div><span class="eyebrow">YOUR LITTLE SHORTLIST</span><h2>Saved favourites</h2></div><button class="icon-button" data-close aria-label="Close">×</button></div><div id="favorite-list" class="favorite-list"></div></div></section>
+  <div class="toast" id="toast" role="status"></div>
+</body>
+</html>

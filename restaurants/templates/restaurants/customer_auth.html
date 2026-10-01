@@ -1,0 +1,60 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f2e9">
+  <title>{% if mode == 'register' %}Create account{% else %}Customer sign in{% endif %} · {{ stall_name }}</title>
+  <link rel="stylesheet" href="{% static 'restaurants/storefront.css' %}">
+  <link rel="stylesheet" href="{% static 'restaurants/customer-auth.css' %}">
+</head>
+<body class="account-page">
+  <header class="topbar account-topbar">
+    <a class="brand" href="{% url 'storefront' %}"><span class="brand-mark">F</span><span>{{ stall_name }}<small>GOOD FOOD, MADE FRESH</small></span></a>
+    <a class="back-link" href="{% url 'storefront' %}">← Back to the menu</a>
+  </header>
+  <main class="account-layout">
+    <section class="account-welcome">
+      <span class="eyebrow">A SEAT AT OUR TABLE</span>
+      <h1>{% if mode == 'register' %}Make room for<br><em>good things.</em>{% else %}Welcome back<br><em>to the table.</em>{% endif %}</h1>
+      <p>{% if mode == 'register' %}Create an account to make your next visit feel a little more like yours.{% else %}Sign in to pick up where you left off and enjoy something freshly made.{% endif %}</p>
+      <div class="account-perks"><span>✦</span><div><b>Your favourites, close by</b><small>Find the dishes you love again.</small></div></div>
+      <div class="account-perks"><span>✦</span><div><b>A smoother next order</b><small>Spend less time filling in the details.</small></div></div>
+      <div class="account-art" aria-hidden="true"><span>🥘</span><i>FRESH<br>DAILY</i></div>
+    </section>
+    <section class="account-card">
+      <div class="account-tabs"><a class="{% if mode == 'login' %}selected{% endif %}" href="{% url 'customer_login' %}">Sign in</a><a class="{% if mode == 'register' %}selected{% endif %}" href="{% url 'customer_register' %}">Create account</a></div>
+      <span class="eyebrow">{% if mode == 'register' %}JOIN OUR TABLE{% else %}NICE TO SEE YOU AGAIN{% endif %}</span>
+      <h2>{% if mode == 'register' %}Create your account{% else %}Customer sign in{% endif %}</h2>
+      <p class="account-subtitle">{% if mode == 'register' %}It only takes a moment to get started.{% else %}Enter your details to continue.{% endif %}</p>
+      <form method="post" class="account-form" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="account-errors">{{ form.non_field_errors }}</div>{% endif %}
+        {% if mode == 'register' %}
+          <label for="id_username">Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}<div class="field-error">{{ form.username.errors }}</div>{% endif %}
+          <small class="field-hint">Use a name you'll remember. You can add contact details at checkout.</small>
+        {% else %}
+          <label for="id_username">Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}<div class="field-error">{{ form.username.errors }}</div>{% endif %}
+        {% endif %}
+        <label for="id_password{% if mode == 'register' %}1{% endif %}">Password</label>
+        {% if mode == 'register' %}{{ form.password1 }}{% else %}{{ form.password }}{% endif %}
+        {% if mode == 'register' and form.password1.errors %}<div class="field-error">{{ form.password1.errors }}</div>{% endif %}
+        {% if mode == 'register' %}
+          <label for="id_password2">Confirm password</label>{{ form.password2 }}
+          {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors }}</div>{% endif %}
+        {% endif %}
+        {% if mode == 'register' %}<small class="field-hint password-hint">Use 8 or more characters. Avoid a password that's too common or only numbers.</small>{% endif %}
+        <button class="primary-button full-width" type="submit">{% if mode == 'register' %}Create my account{% else %}Sign in{% endif %}<span>→</span></button>
+      </form>
+      <p class="account-switch">{% if mode == 'register' %}Already have an account? <a href="{% url 'customer_login' %}">Sign in</a>{% else %}New here? <a href="{% url 'customer_register' %}">Create an account</a>{% endif %}</p>
+      <small class="account-privacy">Your account is used to personalize your experience on this food stall site.</small>
+    </section>
+  </main>
+  <footer class="account-footer"><span>Freshly made, with a little extra love.</span><a href="{% url 'storefront' %}">{{ stall_name }} home</a></footer>
+</body>
+</html>

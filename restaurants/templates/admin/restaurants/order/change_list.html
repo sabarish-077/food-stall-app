@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/foodstall-admin.css' %}"><link rel="stylesheet" href="{% static 'admin/order-management.css' %}">{% endblock %}
+{% block content_title %}
+  <div class="order-admin-welcome"><div><span class="order-admin-eyebrow">YOUR ORDER DESK</span><h1>Hello, {{ request.user.first_name|default:request.user.username }} <span>👋</span></h1><p>Thanks for taking care of the people who order from us.</p></div><a class="order-admin-shortcut" href="/staff/orders/">Open designed order manager ↗</a></div>
+  <section class="order-admin-metrics" aria-label="Order summary">
+    <article><small>Received today</small><b>{{ order_metrics.today }}</b><span>Customer orders today</span></article>
+    <article><small>New orders</small><b>{{ order_metrics.new }}</b><span>Waiting for confirmation</span></article>
+    <article><small>In preparation</small><b>{{ order_metrics.preparing }}</b><span>Being made in the kitchen</span></article>
+    <article><small>Completed</small><b>{{ order_metrics.completed }}</b><span>Ready and served</span></article>
+  </section>
+{% endblock %}

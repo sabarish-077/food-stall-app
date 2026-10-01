@@ -1,0 +1,51 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Manage orders · {{ stall_name }}</title>
+  <link rel="stylesheet" href="{% static 'restaurants/staff.css' %}">
+  <link rel="stylesheet" href="{% static 'restaurants/staff-extra.css' %}">
+  <link rel="stylesheet" href="{% static 'restaurants/staff-orders.css' %}">
+</head>
+<body class="staff-page">
+  <aside class="staff-sidebar">
+    <a class="staff-brand" href="/staff/"><span>F</span>{{ stall_name }}</a><small>STAFF WORKSPACE</small>
+    <a class="staff-nav" href="/staff/">▦ &nbsp; Overview</a><a class="staff-nav" href="/staff/kitchen/">♨ &nbsp; Kitchen board</a><a class="staff-nav active" href="/staff/orders/">▤ &nbsp; Orders</a><a class="staff-nav" href="/admin/restaurants/menuitem/">☷ &nbsp; Menu</a><a class="staff-nav" href="/admin/restaurants/tablebooking/">◷ &nbsp; Bookings</a>
+    <div class="staff-sidebar-bottom"><a href="/">↗ &nbsp; View storefront</a><a href="/admin/logout/">Sign out</a></div>
+  </aside>
+  <main class="staff-main order-main">
+    <header class="staff-top order-top"><div><span class="eyebrow">SERVICE, AT A GLANCE</span><h1>Manage orders</h1><p>Review incoming orders and keep every customer up to date.</p></div><a class="staff-primary" href="/staff/kitchen/">Open kitchen board ↗</a></header>
+    {% if messages %}<div class="order-messages">{% for message in messages %}<div class="order-message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+    <section class="order-stats"><a href="/staff/orders/" class="order-stat"><span class="stat-icon all-icon">▤</span><small>All orders</small><b>{{ totals.all }}</b><i>Browse every order</i></a><a href="?status=placed" class="order-stat"><span class="stat-icon new-icon">✦</span><small>New orders</small><b>{{ totals.new }}</b><i>Ready for confirmation</i></a><a href="?status=preparing" class="order-stat"><span class="stat-icon active-icon">♨</span><small>Preparing</small><b>{{ totals.preparing }}</b><i>Active in the kitchen</i></a><a href="?status=completed" class="order-stat"><span class="stat-icon done-icon">✓</span><small>Completed</small><b>{{ totals.completed }}</b><i>Orders served</i></a></section>
+    <section class="orders-panel">
+      <div class="orders-heading"><div><span class="eyebrow">ORDER INBOX</span><h2>Every order, one place</h2></div><span class="results-count">{{ orders.paginator.count }} result{{ orders.paginator.count|pluralize }}</span></div>
+      <form class="order-filters" method="get">
+        <label class="order-search"><span>⌕</span><input name="q" value="{{ query }}" placeholder="Search order, customer, phone or dish" aria-label="Search orders"></label>
+        <select name="status" aria-label="Filter by status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <select name="fulfillment" aria-label="Filter by order type"><option value="">All order types</option><option value="delivery" {% if selected_fulfillment == "delivery" %}selected{% endif %}>Delivery</option><option value="pickup" {% if selected_fulfillment == "pickup" %}selected{% endif %}>Pickup</option></select>
+        <button class="filter-button" type="submit">Apply filters</button>{% if query or selected_status or selected_fulfillment %}<a class="clear-filters" href="/staff/orders/">Clear</a>{% endif %}
+      </form>
+      <div class="order-list">
+        {% for order in orders %}
+        <article class="order-card">
+          <div class="order-card-head"><div class="order-id"><span class="order-symbol">▤</span><div><b>Order #{{ order.id }}</b><small>{{ order.created_at|date:"D, j M · g:i A" }}</small></div></div><span class="staff-status {{ order.status }}">{{ order.get_status_display }}</span></div>
+          <div class="order-card-body">
+            <section class="customer-block"><span class="block-label">CUSTOMER</span><b>{{ order.customer_name }}</b><a href="tel:{{ order.phone }}">{{ order.phone }}</a><span class="fulfillment-tag">{% if order.fulfillment == "delivery" %}⌖ &nbsp; Delivery{% else %}↗ &nbsp; Pickup{% endif %}</span>{% if order.delivery_address %}<p>{{ order.delivery_address }}</p>{% endif %}</section>
+            <section class="items-block"><span class="block-label">ORDER ITEMS</span><ul>{% for item in order.items.all %}<li><span><b>{{ item.quantity }} ×</b> {{ item.name }}</span><strong>₹{{ item.unit_price|floatformat:0 }}</strong>{% if item.special_instructions %}<small>Note: {{ item.special_instructions }}</small>{% endif %}</li>{% endfor %}</ul>{% if order.coupon_code %}<span class="coupon-tag">✦ Offer {{ order.coupon_code }}</span>{% endif %}<span class="fee-line">{% if order.fulfillment == "delivery" %}Delivery fee: ₹{{ order.delivery_fee|floatformat:0 }}{% else %}Pickup order{% endif %}</span></section>
+            <section class="payment-block"><span class="block-label">PAYMENT</span><b>{{ order.get_payment_method_display }}</b><span class="payment-state {{ order.payment_status }}">{{ order.get_payment_status_display }}</span></section>
+          </div>
+          <form class="order-update" method="post">
+            {% csrf_token %}<input type="hidden" name="order_id" value="{{ order.id }}"><input type="hidden" name="filters" value="{{ filters }}">
+            <label>Status<select name="status">{% for value,label in status_choices %}<option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+            <label>Payment<select name="payment_status">{% for value,label in payment_choices %}<option value="{{ value }}" {% if order.payment_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+            <button type="submit">Save update <span>→</span></button>
+          </form>
+        </article>
+        {% empty %}<div class="orders-empty"><span>▤</span><h3>No matching orders</h3><p>Try clearing filters, or new orders will appear here as they arrive.</p><a href="/staff/orders/">Show all orders</a></div>{% endfor %}
+      </div>
+      {% if orders.paginator.num_pages > 1 %}<nav class="order-pagination" aria-label="Order pages">{% if orders.has_previous %}<a href="?{{ filters }}&page={{ orders.previous_page_number }}">← Newer</a>{% else %}<span></span>{% endif %}<small>Page {{ orders.number }} of {{ orders.paginator.num_pages }}</small>{% if orders.has_next %}<a href="?{{ filters }}&page={{ orders.next_page_number }}">Older →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
+  </main>
+</body>
+</html>
