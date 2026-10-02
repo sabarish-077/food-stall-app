@@ -1,6 +1,6 @@
 from django.db import models
-from decimal import Decimal
-import uuid
+from decimal import Decimalimport uuid
+from urllib.parse import urlparse
 
 
 class MenuItem(models.Model):
@@ -27,6 +27,29 @@ class MenuItem(models.Model):
     @property
     def current_price(self):
         return (self.price * Decimal(100 - self.discount_percent) / Decimal(100)).quantize(Decimal("0.01"))
+
+    @property
+    def display_image_url(self):
+        """Use local artwork instead of Google share pages, which are not image files."""
+        url = (self.image_url or "").strip()
+        host = (urlparse(url).hostname or "").lower()
+        if url.startswith("https://") and host and host not in {
+            "share.google", "photos.app.goo.gl", "goo.gl", "drive.google.com",
+        } and not host.endswith(".google.com"):
+            return url
+
+        text = f"{self.name} {self.category}".lower()
+        if any(word in text for word in ("chai", "tea", "coffee", "drink", "juice")):
+            filename = "food-chai.svg"
+        elif any(word in text for word in ("shawarma", "wrap", "roll", "kebab")):
+            filename = "food-shawarma.svg"
+        elif "chicken" in text or "nonveg" in text:
+            filename = "food-chicken65.svg"
+        elif any(word in text for word in ("samosa", "snack", "savoury", "savory")):
+            filename = "food-samosa.svg"
+        else:
+            filename = "food-dosa.svg"
+        return f"/static/restaurants/{filename}"
 
 
 class Order(models.Model):
