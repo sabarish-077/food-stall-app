@@ -57,9 +57,15 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = "config.wsgi.application"
 
-# SQLite remains the local default; hosted PostgreSQL is configured with DATABASE_URL.
+# SQLite remains the local default. Vercel's Neon integration exposes POSTGRES_URL.
 DB_ENGINE = os.getenv("DB_ENGINE", "sqlite").strip().lower()
-DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+DATABASE_URL = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("POSTGRES_URL")
+    or os.getenv("DATABASE_URL_UNPOOLED")
+    or os.getenv("POSTGRES_URL_NON_POOLING")
+    or ""
+).strip()
 if DATABASE_URL:
     import dj_database_url
     DATABASES = {"default": dj_database_url.parse(

@@ -1,6 +1,6 @@
 {% extends "admin/change_list.html" %}
 {% load static %}
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/foodstall-admin.css' %}"><link rel="stylesheet" href="{% static 'admin/order-management.css' %}">{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/foodstall-admin.css' %}"><link rel="stylesheet" href="{% static 'admin/order-management.css' %}"><link rel="stylesheet" href="{% static 'restaurants/font-colors.css' %}">{% endblock %}
 {% block content_title %}
   <div class="order-admin-welcome"><div><span class="order-admin-eyebrow">YOUR ORDER DESK</span><h1>Hello, {{ request.user.first_name|default:request.user.username }} <span>👋</span></h1><p>Thanks for taking care of the people who order from us.</p></div><a class="order-admin-shortcut" href="/staff/orders/">Open designed order manager ↗</a></div>
   <section class="order-admin-metrics" aria-label="Order summary">

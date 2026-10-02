@@ -2,4 +2,4 @@
 {% load static %}
 {% block title %}{{ title }} · Food Stall Staff{% endblock %}
 {% block branding %}<h1 id="site-name"><a href="/staff/">🍽️ Food Stall <span>STAFF</span></a></h1>{% endblock %}
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/foodstall-admin.css' %}">{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/foodstall-admin.css' %}"><link rel="stylesheet" href="{% static 'restaurants/font-colors.css' %}">{% endblock %}

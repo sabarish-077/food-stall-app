@@ -1,0 +1,8 @@
+:root {
+  --ink: #222831;
+  --muted: #727a86;
+}
+
+body {
+  color: var(--ink);
+}
