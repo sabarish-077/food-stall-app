@@ -6,3 +6,17 @@
 body {
   color: var(--ink);
 }
+
+input,
+textarea,
+select {
+  color: var(--ink);
+  caret-color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}

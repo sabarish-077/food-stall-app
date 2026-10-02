@@ -17,7 +17,7 @@
   </header>
   <main class="detail-layout">
     <div class="detail-photo">
-      <img src="{{ item.image_url|default:'/static/restaurants/food-dosa.svg' }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='/static/restaurants/food-dosa.svg'">
+      <img src="{{ item.display_image_url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='/static/restaurants/food-dosa.svg'">
       {% if item.discount_percent %}<span class="detail-discount">{{ item.discount_percent }}% OFF</span>{% endif %}
     </div>
     <article class="detail-copy">

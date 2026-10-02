@@ -9,6 +9,17 @@ class MenuItemAdmin(admin.ModelAdmin):
     list_display = ("name", "category", "price", "discount_percent", "is_vegetarian", "is_bestseller", "is_available")
     list_filter = ("category", "is_vegetarian", "is_available")
     search_fields = ("name", "description")
+    fields = ("name", "description", "category", "price", "discount_percent", "image_url", "image_preview", "is_vegetarian", "is_available", "is_bestseller", "is_new", "spice_level", "preparation_minutes", "rating")
+    readonly_fields = ("image_preview",)
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == "image_url":
+            kwargs["help_text"] = "Use a direct image-file link. Google share links open a web page and cannot be displayed as food photos."
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
+    @admin.display(description="Image preview")
+    def image_preview(self, obj):
+        return format_html('<img src="{}" alt="{}" style="width:180px;height:120px;object-fit:cover;border-radius:12px;border:1px solid #e4dfd4">', obj.display_image_url, obj.name or "Food image")
 
 
 class OrderItemInline(admin.TabularInline):

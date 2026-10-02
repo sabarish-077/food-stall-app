@@ -171,7 +171,7 @@ def menu(request):
         "price": str(item.current_price),
         "original_price": str(item.price),
         "discount_percent": item.discount_percent,
-        "image_url": item.image_url,
+        "image_url": item.display_image_url,
         "is_vegetarian": item.is_vegetarian,
         "is_bestseller": item.is_bestseller,
         "is_new": item.is_new,
