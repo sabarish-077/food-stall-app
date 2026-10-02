@@ -10,6 +10,17 @@
   const demoDeliveryFee = Number($('#cart-panel').dataset.deliveryFee || 0);
   const money = (value) => `₹${Number(value).toFixed(0)}`;
   const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  async function readJson(response, fallback) {
+    const body = await response.text();
+    let result;
+    try { result = JSON.parse(body); }
+    catch (_) {
+      if (!response.ok) throw new Error(`${fallback} (server error ${response.status}). Please try again in a moment.`);
+      throw new Error(fallback);
+    }
+    if (!response.ok) throw new Error(result.error || result.detail || fallback);
+    return result;
+  }
   const csrfToken = () => document.cookie.split('; ').find((entry) => entry.startsWith('csrftoken='))?.split('=').slice(1).join('=') || '';
 
   function toast(message) {
@@ -156,8 +167,7 @@
       const response = await fetch(`${api}/orders/track/${encodeURIComponent(button.dataset.cancelOrder)}/cancel/`, {
         method: 'POST', headers: {'X-CSRFToken': csrfToken()},
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Could not cancel this order.');
+      await readJson(response, 'Could not cancel this order.');
       toast('Order cancelled');
       await showOrders();
     } catch (error) {
@@ -204,7 +214,7 @@
     const order = {customer_name: form.get('customer_name'), phone: form.get('phone'), fulfillment: form.get('fulfillment'), delivery_address: form.get('delivery_address'), payment_method: form.get('payment_method'), coupon_code: form.get('coupon_code'), items: [...cart].map(([menu_item_id, quantity]) => ({menu_item_id, quantity, special_instructions: specialNotes.get(menu_item_id) || ''}))};
     try {
       const response = await fetch(`${api}/orders/`, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken()}, body: JSON.stringify(order)});
-      const result = await response.json(); if (!response.ok) throw new Error(result.error || result.detail || 'The order could not be placed. Please try again.');
+      const result = await readJson(response, 'We could not place your order. Please try again in a moment.');
       const tokens = orderTokens(); tokens.unshift(result.tracking_token); localStorage.setItem('foodstall_order_tokens', JSON.stringify(tokens.slice(0, 20)));
       $('#order-success-greeting').textContent = `Hi, ${order.customer_name}! Thank you for choosing us.`;
       $('#order-success-number').textContent = `Order #${result.order_id}`;
@@ -218,8 +228,7 @@
     event.preventDefault(); const button = event.currentTarget.querySelector('button[type="submit"]'); button.disabled = true; $('#booking-error').textContent = '';
     const form = new FormData(event.currentTarget); const payload = Object.fromEntries(form.entries());
     try {
-      const response = await fetch(`${api}/bookings/`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken()},body:JSON.stringify(payload)}); const result = await response.json();
-      if (!response.ok) throw new Error(result.error || result.detail || 'Booking could not be created.');
+      const response = await fetch(`${api}/bookings/`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken()},body:JSON.stringify(payload)}); const result = await readJson(response, 'Booking could not be created. Please try again in a moment.');
       const tokens = bookingTokens(); tokens.unshift(result.booking_token); localStorage.setItem('foodstall_booking_tokens', JSON.stringify(tokens.slice(0, 20)));
       closePanels(); toast(`Booking #${result.booking_id} requested · Table ${result.table}`); event.currentTarget.reset(); $('#table-select').innerHTML = '<option value="">Choose date, time and guests first</option>';
     } catch (error) { $('#booking-error').textContent = error.message; } finally { button.disabled = false; }
@@ -228,8 +237,7 @@
     event.preventDefault(); const button = event.currentTarget.querySelector('button[type="submit"]'); button.disabled = true; $('#review-error').textContent = '';
     const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
     try {
-      const response = await fetch(`${api}/reviews/`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken()},body:JSON.stringify(payload)}); const result = await response.json();
-      if (!response.ok) throw new Error(result.error || result.detail || 'Review could not be submitted.');
+      const response = await fetch(`${api}/reviews/`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken()},body:JSON.stringify(payload)}); await readJson(response, 'Review could not be submitted. Please try again in a moment.');
       closePanels(); toast('Thank you! Your review is awaiting approval.'); event.currentTarget.reset();
     } catch (error) { $('#review-error').textContent = error.message; } finally { button.disabled = false; }
   });
