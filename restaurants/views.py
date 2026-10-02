@@ -247,6 +247,17 @@ def track_order(request, token):
     })
 
 
+@api_view(["POST"])
+def cancel_order(request, token):
+    with transaction.atomic():
+        order = get_object_or_404(Order.objects.select_for_update(), tracking_token=token)
+        if order.status not in ("placed", "confirmed"):
+            return Response({"error": "This order can no longer be cancelled."}, status=status.HTTP_409_CONFLICT)
+        order.status = "cancelled"
+        order.save(update_fields=["status"])
+    return Response({"order_id": order.id, "status": order.status})
+
+
 @api_view(["GET"])
 def offers(request):
     now = timezone.now()

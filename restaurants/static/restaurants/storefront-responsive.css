@@ -1,6 +1,7 @@
 /* Professional responsive layer for the customer storefront. */
 :root{--ink:#202a36;--muted:#747b83;--cream:#f7f3ea;--paper:#fffefa;--green:#26384a;--orange:#bd8041;--line:#e8e2d8;--coral:#bd6048;--softgold:#f4e9d8}
 html{scroll-padding-top:92px}
+.topbar{position:static;top:auto}
 body{overflow-x:clip;color:var(--ink)}
 button,a,input,select,textarea{touch-action:manipulation}
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #d59b58;outline-offset:3px}

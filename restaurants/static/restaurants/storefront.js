@@ -110,12 +110,12 @@
     if (!tokens.length && !reservations.length) { box.innerHTML = '<div class="empty-state">Your orders and table reservations will appear here.</div>'; return; }
     box.innerHTML = '<div class="loading-card">Checking your orders…</div>';
     const [responses, reservationResponses] = await Promise.all([Promise.all(tokens.map(async (token) => {
-      try { const response = await fetch(`${api}/orders/track/${encodeURIComponent(token)}/`); return response.ok ? await response.json() : null; } catch (_) { return null; }
+      try { const response = await fetch(`${api}/orders/track/${encodeURIComponent(token)}/`); return response.ok ? {...await response.json(), tracking_token: token} : null; } catch (_) { return null; }
     })), Promise.all(reservations.map(async (token) => {
       try { const response = await fetch(`${api}/bookings/track/${encodeURIComponent(token)}/`); return response.ok ? await response.json() : null; } catch (_) { return null; }
     }))]);
     const orders = responses.filter(Boolean); const bookings = reservationResponses.filter(Boolean);
-    const orderMarkup = orders.map((order) => `<article class="order-entry"><b>Order #${order.order_id}</b><span class="status-pill">${escapeHtml(String(order.status).replaceAll('_', ' '))}</span><p>${order.items.map((item) => `${item.quantity} × ${escapeHtml(item.name)}`).join(', ')}</p><p>${escapeHtml(order.fulfillment)} · ${new Date(order.created_at).toLocaleString()}</p><div class="order-steps"><i class="${['placed','confirmed','preparing','ready','out_for_delivery','completed'].indexOf(order.status)>=0?'done':''}">Confirmed</i><i class="${['preparing','ready','out_for_delivery','completed'].includes(order.status)?'done':''}">Preparing</i><i class="${['ready','out_for_delivery','completed'].includes(order.status)?'done':''}">Ready</i><i class="${['out_for_delivery','completed'].includes(order.status)?'done':''}">${order.fulfillment==='pickup'?'Pickup':'On the way'}</i><i class="${order.status==='completed'?'done':''}">Done</i></div></article>`).join('');
+    const orderMarkup = orders.map((order) => `<article class="order-entry"><b>Order #${order.order_id}</b><span class="status-pill">${escapeHtml(String(order.status).replaceAll('_', ' '))}</span><p>${order.items.map((item) => `${item.quantity} × ${escapeHtml(item.name)}`).join(', ')}</p><p>${escapeHtml(order.fulfillment)} · ${new Date(order.created_at).toLocaleString()}</p><div class="order-steps"><i class="${['placed','confirmed','preparing','ready','out_for_delivery','completed'].indexOf(order.status)>=0?'done':''}">Confirmed</i><i class="${['preparing','ready','out_for_delivery','completed'].includes(order.status)?'done':''}">Preparing</i><i class="${['ready','out_for_delivery','completed'].includes(order.status)?'done':''}">Ready</i><i class="${['out_for_delivery','completed'].includes(order.status)?'done':''}">${order.fulfillment==='pickup'?'Pickup':'On the way'}</i><i class="${order.status==='completed'?'done':''}">Done</i></div>${['placed','confirmed'].includes(order.status) ? `<button class="cancel-order" data-cancel-order="${escapeHtml(order.tracking_token)}" type="button">Cancel order</button>` : ''}</article>`).join('');
     const bookingMarkup = bookings.map((booking) => `<article class="order-entry"><b>Table booking #${booking.booking_id}</b><span class="status-pill">${escapeHtml(booking.status)}</span><p>Table ${escapeHtml(booking.table)} · ${booking.guests} guests · ${escapeHtml(booking.date)} at ${escapeHtml(booking.time)}</p></article>`).join('');
     box.innerHTML = (orderMarkup ? '<h3 class="history-heading">Orders</h3>' + orderMarkup : '') + (bookingMarkup ? '<h3 class="history-heading">Table bookings</h3>' + bookingMarkup : '') || '<div class="empty-state">Could not check your history right now. Please try again.</div>';
   }
@@ -133,6 +133,23 @@
   });
   $('#cart-open').addEventListener('click', () => { renderCart(); openPanel('cart-panel'); });
   $('#orders-open').addEventListener('click', showOrders);
+  $('#order-history').addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-cancel-order]'); if (!button) return;
+    if (!window.confirm('Cancel this order?')) return;
+    button.disabled = true;
+    try {
+      const response = await fetch(`${api}/orders/track/${encodeURIComponent(button.dataset.cancelOrder)}/cancel/`, {
+        method: 'POST', headers: {'X-CSRFToken': csrfToken()},
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Could not cancel this order.');
+      toast('Order cancelled');
+      await showOrders();
+    } catch (error) {
+      toast(error.message || 'Could not cancel this order.');
+      button.disabled = false;
+    }
+  });
   $('#favorites-open').addEventListener('click', showFavorites);
   $('#menu-search').addEventListener('input', renderMenu);
   $('#diet-filter').addEventListener('change', renderMenu);
