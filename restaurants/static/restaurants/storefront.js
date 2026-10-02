@@ -220,7 +220,7 @@
       $('#order-success-number').textContent = `Order #${result.order_id}`;
       $('#order-success-items').innerHTML = order.items.map((row) => { const item = menuItems.find((menuItem) => menuItem.id === row.menu_item_id); return `<div><span><b>${row.quantity} ×</b> ${escapeHtml(item?.name || 'Menu item')}</span><strong>${money(Number(item?.price || 0) * row.quantity)}</strong></div>`; }).join('');
       $('#order-success-total').textContent = money(result.total);
-      cart.clear(); specialNotes.clear(); renderCart(); checkoutForm.reset(); closePanels(); openPanel('order-success-modal');
+      cart.clear(); specialNotes.clear(); renderCart(); checkoutForm?.reset?.(); closePanels(); openPanel('order-success-modal');
     } catch (error) { $('#checkout-error').textContent = error.message; }
     finally { button.disabled = false; }
   });
@@ -230,7 +230,7 @@
     try {
       const response = await fetch(`${api}/bookings/`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken()},body:JSON.stringify(payload)}); const result = await readJson(response, 'Booking could not be created. Please try again in a moment.');
       const tokens = bookingTokens(); tokens.unshift(result.booking_token); localStorage.setItem('foodstall_booking_tokens', JSON.stringify(tokens.slice(0, 20)));
-      closePanels(); toast(`Booking #${result.booking_id} requested · Table ${result.table}`); bookingForm.reset(); $('#table-select').innerHTML = '<option value="">Choose date, time and guests first</option>';
+      closePanels(); toast(`Booking #${result.booking_id} requested · Table ${result.table}`); bookingForm?.reset?.(); $('#table-select').innerHTML = '<option value="">Choose date, time and guests first</option>';
     } catch (error) { $('#booking-error').textContent = error.message; } finally { button.disabled = false; }
   });
   $('#review-form').addEventListener('submit', async (event) => {
@@ -238,7 +238,7 @@
     const payload = Object.fromEntries(new FormData(reviewForm).entries());
     try {
       const response = await fetch(`${api}/reviews/`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken()},body:JSON.stringify(payload)}); await readJson(response, 'Review could not be submitted. Please try again in a moment.');
-      closePanels(); toast('Thank you! Your review is awaiting approval.'); reviewForm.reset();
+      closePanels(); toast('Thank you! Your review is awaiting approval.'); reviewForm?.reset?.();
     } catch (error) { $('#review-error').textContent = error.message; } finally { button.disabled = false; }
   });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closePanels(); });
