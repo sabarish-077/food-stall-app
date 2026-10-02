@@ -1,0 +1,17 @@
+/* Keep the customer navbar in normal page flow at every screen size. */
+.topbar{position:static!important;top:auto!important;z-index:auto!important}
+
+.order-entry-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.order-entry-heading .status-pill{flex:0 0 auto}
+.order-details-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:11px;padding:10px 0;border:0;border-top:1px solid var(--line);background:transparent;color:var(--green);font-size:11px;font-weight:700;text-align:left;cursor:pointer}
+.order-details-toggle span{font-size:17px}
+.order-details[hidden]{display:none!important}
+.order-details{padding:9px 0 3px}
+.order-detail-row,.order-detail-item{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:8px 0;font-size:11px}
+.order-detail-row>span,.order-detail-item>span{color:var(--muted)}
+.order-detail-row>b,.order-detail-item>strong{max-width:65%;text-align:right;color:var(--ink)}
+.order-detail-items{border-block:1px solid var(--line);margin:7px 0}
+.order-detail-item small{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:400}
+.order-detail-total{border-top:1px solid var(--line);font-size:13px}
+.order-legacy-total{padding:8px 0;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}
+@media(max-width:480px){.order-detail-row,.order-detail-item{gap:10px}.order-detail-row>b,.order-detail-item>strong{max-width:58%}}

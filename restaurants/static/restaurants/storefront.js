@@ -115,7 +115,13 @@
       try { const response = await fetch(`${api}/bookings/track/${encodeURIComponent(token)}/`); return response.ok ? await response.json() : null; } catch (_) { return null; }
     }))]);
     const orders = responses.filter(Boolean); const bookings = reservationResponses.filter(Boolean);
-    const orderMarkup = orders.map((order) => `<article class="order-entry"><b>Order #${order.order_id}</b><span class="status-pill">${escapeHtml(String(order.status).replaceAll('_', ' '))}</span><p>${order.items.map((item) => `${item.quantity} × ${escapeHtml(item.name)}`).join(', ')}</p><p>${escapeHtml(order.fulfillment)} · ${new Date(order.created_at).toLocaleString()}</p><div class="order-steps"><i class="${['placed','confirmed','preparing','ready','out_for_delivery','completed'].indexOf(order.status)>=0?'done':''}">Confirmed</i><i class="${['preparing','ready','out_for_delivery','completed'].includes(order.status)?'done':''}">Preparing</i><i class="${['ready','out_for_delivery','completed'].includes(order.status)?'done':''}">Ready</i><i class="${['out_for_delivery','completed'].includes(order.status)?'done':''}">${order.fulfillment==='pickup'?'Pickup':'On the way'}</i><i class="${order.status==='completed'?'done':''}">Done</i></div>${['placed','confirmed'].includes(order.status) ? `<button class="cancel-order" data-cancel-order="${escapeHtml(order.tracking_token)}" type="button">Cancel order</button>` : ''}</article>`).join('');
+    const orderMarkup = orders.map((order) => {
+      const detailsId = `order-details-${order.order_id}`;
+      const itemRows = order.items.map((item) => `<div class="order-detail-item"><span><b>${item.quantity} ×</b> ${escapeHtml(item.name)}${item.special_instructions ? `<small>${escapeHtml(item.special_instructions)}</small>` : ''}</span><strong>${money(item.line_total)}</strong></div>`).join('');
+      const address = order.fulfillment === 'delivery' && order.delivery_address ? `<div class="order-detail-row"><span>Delivery address</span><b>${escapeHtml(order.delivery_address)}</b></div>` : '';
+      const total = order.total ? `<div class="order-detail-row order-detail-total"><span>Order total</span><b>${money(order.total)}</b></div>` : '<p class="order-legacy-total">Total is not available for this older order.</p>';
+      return `<article class="order-entry"><div class="order-entry-heading"><b>Order #${order.order_id}</b><span class="status-pill">${escapeHtml(String(order.status).replaceAll('_', ' '))}</span></div><p>${order.items.map((item) => `${item.quantity} × ${escapeHtml(item.name)}`).join(', ')}</p><p>${escapeHtml(order.fulfillment)} · ${new Date(order.created_at).toLocaleString()}</p><div class="order-steps"><i class="${['placed','confirmed','preparing','ready','out_for_delivery','completed'].indexOf(order.status)>=0?'done':''}">Confirmed</i><i class="${['preparing','ready','out_for_delivery','completed'].includes(order.status)?'done':''}">Preparing</i><i class="${['ready','out_for_delivery','completed'].includes(order.status)?'done':''}">Ready</i><i class="${['out_for_delivery','completed'].includes(order.status)?'done':''}">${order.fulfillment==='pickup'?'Pickup':'On the way'}</i><i class="${order.status==='completed'?'done':''}">Done</i></div><button class="order-details-toggle" type="button" data-order-details="${detailsId}" aria-expanded="false">See order details <span aria-hidden="true">＋</span></button><div class="order-details" id="${detailsId}" hidden><div class="order-detail-row"><span>Customer</span><b>${escapeHtml(order.customer_name)}</b></div><div class="order-detail-row"><span>Phone</span><b>${escapeHtml(order.phone)}</b></div><div class="order-detail-row"><span>Payment</span><b>${escapeHtml(String(order.payment_method).replaceAll('_', ' '))} · ${escapeHtml(order.payment_status)}</b></div>${address}<div class="order-detail-items">${itemRows}</div><div class="order-detail-row"><span>Items subtotal</span><b>${money(order.subtotal)}</b></div><div class="order-detail-row"><span>Delivery fee</span><b>${money(order.delivery_fee)}</b></div>${total}</div>${['placed','confirmed'].includes(order.status) ? `<button class="cancel-order" data-cancel-order="${escapeHtml(order.tracking_token)}" type="button">Cancel order</button>` : ''}</article>`;
+    }).join('');
     const bookingMarkup = bookings.map((booking) => `<article class="order-entry"><b>Table booking #${booking.booking_id}</b><span class="status-pill">${escapeHtml(booking.status)}</span><p>Table ${escapeHtml(booking.table)} · ${booking.guests} guests · ${escapeHtml(booking.date)} at ${escapeHtml(booking.time)}</p></article>`).join('');
     box.innerHTML = (orderMarkup ? '<h3 class="history-heading">Orders</h3>' + orderMarkup : '') + (bookingMarkup ? '<h3 class="history-heading">Table bookings</h3>' + bookingMarkup : '') || '<div class="empty-state">Could not check your history right now. Please try again.</div>';
   }
@@ -134,6 +140,15 @@
   $('#cart-open').addEventListener('click', () => { renderCart(); openPanel('cart-panel'); });
   $('#orders-open').addEventListener('click', showOrders);
   $('#order-history').addEventListener('click', async (event) => {
+    const detailsButton = event.target.closest('[data-order-details]');
+    if (detailsButton) {
+      const details = document.getElementById(detailsButton.dataset.orderDetails);
+      const expanded = detailsButton.getAttribute('aria-expanded') === 'true';
+      details.hidden = expanded;
+      detailsButton.setAttribute('aria-expanded', String(!expanded));
+      detailsButton.innerHTML = expanded ? 'See order details <span aria-hidden="true">＋</span>' : 'Hide order details <span aria-hidden="true">−</span>';
+      return;
+    }
     const button = event.target.closest('[data-cancel-order]'); if (!button) return;
     if (!window.confirm('Cancel this order?')) return;
     button.disabled = true;

@@ -224,7 +224,7 @@ def orders(request):
     grand_total = subtotal - discount + delivery_fee
     with transaction.atomic():
         order = Order.objects.create(customer_name=name, phone=phone, delivery_address=address, fulfillment=fulfillment,
-            payment_method=payment_method, delivery_fee=delivery_fee, coupon_code=coupon_code)
+            payment_method=payment_method, delivery_fee=delivery_fee, coupon_code=coupon_code, total_amount=grand_total)
         for item_id, quantity in quantities.items():
             item = available[item_id]
             row = next(row for row in requested_items if int(row.get("menu_item_id", 0)) == item_id)
@@ -237,13 +237,23 @@ def orders(request):
 @api_view(["GET"])
 def track_order(request, token):
     order = get_object_or_404(Order, tracking_token=token)
+    items = list(order.items.all())
+    subtotal = sum((line.unit_price * line.quantity for line in items), start=0)
     return Response({
         "order_id": order.id,
         "status": order.status,
         "fulfillment": order.fulfillment,
         "created_at": order.created_at.isoformat(),
-        "items": [{"name": line.name, "quantity": line.quantity, "unit_price": str(line.unit_price), "special_instructions": line.special_instructions} for line in order.items.all()],
+        "customer_name": order.customer_name,
+        "phone": order.phone,
+        "delivery_address": order.delivery_address,
+        "payment_method": order.payment_method,
         "payment_status": order.payment_status,
+        "items": [{"name": line.name, "quantity": line.quantity, "unit_price": str(line.unit_price),
+                   "line_total": str(line.unit_price * line.quantity), "special_instructions": line.special_instructions} for line in items],
+        "subtotal": str(subtotal),
+        "delivery_fee": str(order.delivery_fee),
+        "total": str(order.total_amount) if order.total_amount else None,
     })
 
 

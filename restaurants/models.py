@@ -62,6 +62,7 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=24, choices=[("cash_on_delivery", "Cash on delivery"), ("pay_at_stall", "Pay at stall")], default="cash_on_delivery")
     payment_status = models.CharField(max_length=12, choices=[("unpaid", "Unpaid"), ("paid", "Paid")], default="unpaid")
     delivery_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     coupon_code = models.CharField(max_length=40, blank=True)
     status = models.CharField(max_length=20, choices=[
         ("placed", "Placed"), ("confirmed", "Confirmed"), ("preparing", "Preparing"),
