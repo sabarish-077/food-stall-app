@@ -1,5 +1,6 @@
 from django.db import models
-from decimal import Decimalimport uuid
+from decimal import Decimal
+import uuid
 from urllib.parse import urlparse
 
 
