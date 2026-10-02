@@ -209,7 +209,7 @@
     const delivery = event.target.value === 'delivery'; $('#address-label').hidden = !delivery; $('#address-label textarea').required = delivery;
   });
   $('#checkout-form').addEventListener('submit', async (event) => {
-    event.preventDefault(); const form = new FormData(event.currentTarget); const button = event.currentTarget.querySelector('button[type="submit"]');
+    event.preventDefault(); const checkoutForm = event.currentTarget; const form = new FormData(checkoutForm); const button = checkoutForm.querySelector('button[type="submit"]');
     button.disabled = true; $('#checkout-error').textContent = '';
     const order = {customer_name: form.get('customer_name'), phone: form.get('phone'), fulfillment: form.get('fulfillment'), delivery_address: form.get('delivery_address'), payment_method: form.get('payment_method'), coupon_code: form.get('coupon_code'), items: [...cart].map(([menu_item_id, quantity]) => ({menu_item_id, quantity, special_instructions: specialNotes.get(menu_item_id) || ''}))};
     try {
@@ -220,25 +220,25 @@
       $('#order-success-number').textContent = `Order #${result.order_id}`;
       $('#order-success-items').innerHTML = order.items.map((row) => { const item = menuItems.find((menuItem) => menuItem.id === row.menu_item_id); return `<div><span><b>${row.quantity} ×</b> ${escapeHtml(item?.name || 'Menu item')}</span><strong>${money(Number(item?.price || 0) * row.quantity)}</strong></div>`; }).join('');
       $('#order-success-total').textContent = money(result.total);
-      cart.clear(); specialNotes.clear(); renderCart(); event.currentTarget.reset(); closePanels(); openPanel('order-success-modal');
+      cart.clear(); specialNotes.clear(); renderCart(); checkoutForm.reset(); closePanels(); openPanel('order-success-modal');
     } catch (error) { $('#checkout-error').textContent = error.message; }
     finally { button.disabled = false; }
   });
   $('#booking-form').addEventListener('submit', async (event) => {
-    event.preventDefault(); const button = event.currentTarget.querySelector('button[type="submit"]'); button.disabled = true; $('#booking-error').textContent = '';
-    const form = new FormData(event.currentTarget); const payload = Object.fromEntries(form.entries());
+    event.preventDefault(); const bookingForm = event.currentTarget; const button = bookingForm.querySelector('button[type="submit"]'); button.disabled = true; $('#booking-error').textContent = '';
+    const form = new FormData(bookingForm); const payload = Object.fromEntries(form.entries());
     try {
       const response = await fetch(`${api}/bookings/`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken()},body:JSON.stringify(payload)}); const result = await readJson(response, 'Booking could not be created. Please try again in a moment.');
       const tokens = bookingTokens(); tokens.unshift(result.booking_token); localStorage.setItem('foodstall_booking_tokens', JSON.stringify(tokens.slice(0, 20)));
-      closePanels(); toast(`Booking #${result.booking_id} requested · Table ${result.table}`); event.currentTarget.reset(); $('#table-select').innerHTML = '<option value="">Choose date, time and guests first</option>';
+      closePanels(); toast(`Booking #${result.booking_id} requested · Table ${result.table}`); bookingForm.reset(); $('#table-select').innerHTML = '<option value="">Choose date, time and guests first</option>';
     } catch (error) { $('#booking-error').textContent = error.message; } finally { button.disabled = false; }
   });
   $('#review-form').addEventListener('submit', async (event) => {
-    event.preventDefault(); const button = event.currentTarget.querySelector('button[type="submit"]'); button.disabled = true; $('#review-error').textContent = '';
-    const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
+    event.preventDefault(); const reviewForm = event.currentTarget; const button = reviewForm.querySelector('button[type="submit"]'); button.disabled = true; $('#review-error').textContent = '';
+    const payload = Object.fromEntries(new FormData(reviewForm).entries());
     try {
       const response = await fetch(`${api}/reviews/`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken()},body:JSON.stringify(payload)}); await readJson(response, 'Review could not be submitted. Please try again in a moment.');
-      closePanels(); toast('Thank you! Your review is awaiting approval.'); event.currentTarget.reset();
+      closePanels(); toast('Thank you! Your review is awaiting approval.'); reviewForm.reset();
     } catch (error) { $('#review-error').textContent = error.message; } finally { button.disabled = false; }
   });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closePanels(); });
